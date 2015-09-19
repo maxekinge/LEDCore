@@ -30,16 +30,12 @@ namespace LEDCore
 		}
 		private bool breakAnimation = false;
 		public Thread PlayThread { get; set; }
-	
-		public int PackageSize {
-			get
-			{ 
-				return ((int)(Math.Pow(CubeSize, 2) + CubeSize) / 8);
-			}
-		}
 
-		public Animation (ushort cubeSize)
+		public Animation (int cubeSize)
 		{
+			if (cubeSize > 16 | cubeSize < 2) {
+				throw new Exception ("Invalid size");
+			}
 			AutoRepeat = true;
 			this.CubeSize = cubeSize;
 		}
@@ -69,7 +65,7 @@ namespace LEDCore
 			{
 				long start = DateTime.Now.Ticks;
 				int f = CurrentFrame;
-				Writer.Write(Frames[f].Data); 				
+				Frames[f].SendData(Writer);
 				// Sleep but subtract the overhead (stuff above)...
 				Thread.Sleep(TimeSpan.FromTicks(TimeSpan.FromSeconds(Frames[f].FrameTime).Ticks - (DateTime.Now.Ticks - start)));
 				f++;
@@ -79,19 +75,15 @@ namespace LEDCore
 		public void Pause()
 		{
 			breakAnimation = true;
-			PlayThread.Join (TimeSpan.FromSeconds (Frames [CurrentFrame].FrameTime));
+			//PlayThread.Join (TimeSpan.FromSeconds (Frames [CurrentFrame].FrameTime));
 			PlayThread.Abort ();
 			PlayThread = null;
 		}
-
-
  
 		#region IDisposable implementation
 		public void Dispose ()
 		{
-			//TODO Build in
 			this.Writer.Dispose ();
-			
 		}
 		#endregion
 	}

@@ -12,7 +12,6 @@ namespace LEDCore
 
 		public void Dispose ()
 		{
-			this.AssociatedAnimation = null;
 			this.FrameData = null;
 		}
 
@@ -36,54 +35,51 @@ namespace LEDCore
 			get;
 			private set;
 		}
-
-		public double FrameTime { 
+		/// <summary>
+		/// Time for a single frame in ticks
+		/// </summary>
+		/// <value>The frame time.</value>
+		public long FrameTime { 
 			get; 
 			set; 		
 		}
 
-		private struct Location
+		public void SendData(ref System.IO.Stream stream)
 		{
-			public int x;
-			public int y;
-			public int layer;
-		}
+			int n = AssociatedAnimation.CubeSize;
+			bool[] bitBuffer = new bool[(int)Math.Pow(n,3)];
 
-		public byte[] Data
-		{
-			get 
+			stream.WriteByte (LEDCore.ESC);
+			stream.WriteByte (LEDCore.SYNC);
+
+			int m = 0;
+			byte build = 0;
+			for(int layer = 0; layer < n; layer++)
 			{
-				Debug.WriteLine ("SYNC");
-				int n = AssociatedAnimation.CubeSize;
-				bool[] bitBuffer = new bool[(int)Math.Pow(n,3)];
-				byte[] buffer = new byte[bitBuffer.Length / 8 + 2];
-				buffer [0] = LEDCore.ESC;
-				buffer [1] = LEDCore.SYNC;
-				for(int layer = 0; layer < n; layer++)
+				for(int x = 0; x < n; x++) 
 				{
-					for(int x = 0; x < n; x++) 
-					{
-						for (int y = 0; y < n; y++) 
-						{	
-							int ledPos = layer + x + (y * n) + 2;
-							int val = FrameData [x, y, layer] ? 1 : 0;
-							buffer[ledPos / 8] = (byte)(val << (8 - (ledPos % 8)));
+
+					for (int y = 0; y < n; y++) 
+					{	
+						if (FrameData [layer, x, y]) {
+
+							//TODO: fix maxsize from 16x16x16 to nxnxn (split to multiple bytes)
+							if ((byte)layer == LEDCore.ESC) {
+								stream.WriteByte (LEDCore.ESC);
+							}
+
+							stream.WriteByte ((byte)layer);
+
+							if ((byte)(x + n * y) == LEDCore.ESC) {
+								stream.WriteByte (LEDCore.ESC);
+							}
+
+							stream.WriteByte ((byte)(x + n * y));
 						}
-					}							          
-				}
-				int pos = 0;
-				List<byte> workspace = new List<byte> (buffer);
-				foreach (byte b in buffer) {
-					if (b == LEDCore.ESC) {
-						workspace.Insert (++pos, 0x00);
-						Debug.WriteLine ("ESC @ " + pos);
 					}
-					pos++;
-				}
-				return buffer;
+				}							          
 			}
 		}
-
 	}
 }
 
