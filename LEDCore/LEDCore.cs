@@ -58,6 +58,7 @@ namespace LEDCore
 		private void play(){
 			foreach (var animation in Animations) {
 				Console.WriteLine (animation.Name + " is now playing");
+				animation.AutoRepeat = false;
 				animation.Play ();
 				animation.PlayThread.Join ();
 			}
@@ -78,7 +79,7 @@ namespace LEDCore
 
 		public void Load(StreamReader reader) 
 		{
-			this.Animations = JsonConvert.DeserializeObject<LEDCore> (reader);
+			this.Animations =  JsonConvert.DeserializeObject<List<Animation>> (/*Convert.FromBase64String(*/reader.ReadToEnd()/*)*/);
 			foreach (var animation in Animations) 
 			{
 				animation.PlayThread.Abort ();
@@ -89,7 +90,7 @@ namespace LEDCore
 
 		public void Save(ref StreamWriter output)
 		{
-			output.Write (Convert.ToBase64String (Encoding.Default.GetBytes (JsonConvert.SerializeObject (this.Animations))));
+			output.Write (/*Convert.ToBase64String (Encoding.Default.GetBytes (*/JsonConvert.SerializeObject (this.Animations))/*))*/;
 		}
 
 		public bool Connect()

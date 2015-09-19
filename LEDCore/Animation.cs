@@ -16,13 +16,17 @@ namespace LEDCore
 		public BinaryWriter Writer { get; set; }
 		public bool AutoRepeat { get; set; }
 		public int CurrentFrame { get; set; }
-		public ushort CubeSize { get; private set; }
+		public int CubeSize { get; private set; }
+
+		public long TimeWaitAfter { get; set; }
+		public long TimeWaitBefore { get; set; }
+
 		public TimeSpan TotalAnimationTime { 
 			get{
 				return TimeSpan.FromSeconds(Frames.Select (frame => frame.FrameTime).Sum ());
 			} 
 			set{
-				double time = value.TotalSeconds / Frames.Count;
+				long time = value.Ticks / Frames.Count;
 				foreach (var frame in Frames) {
 					frame.FrameTime = time;
 				}
@@ -45,7 +49,7 @@ namespace LEDCore
 			this.Frames = (List<Frame>)frames;
 		}
 
-		public Animation (ushort cubeSize, IList<Frame> frames, float overrideFrameTime) : this(cubeSize, frames)
+		public Animation (ushort cubeSize, IList<Frame> frames, long overrideFrameTime) : this(cubeSize, frames)
 		{
 			foreach (var frame in frames) {
 				frame.FrameTime = overrideFrameTime;
@@ -61,23 +65,28 @@ namespace LEDCore
 
 		private void play()
 		{
+			Thread.Sleep (TimeSpan.FromTicks (TimeWaitBefore));
 			do 
 			{
 				long start = DateTime.Now.Ticks;
 				int f = CurrentFrame;
-				Frames[f].SendData(Writer);
+				Frames[f].SendData(this.Writer.BaseStream);
 				// Sleep but subtract the overhead (stuff above)...
-				Thread.Sleep(TimeSpan.FromTicks(TimeSpan.FromSeconds(Frames[f].FrameTime).Ticks - (DateTime.Now.Ticks - start)));
+				Thread.Sleep(TimeSpan.FromTicks(Frames[f].FrameTime - (DateTime.Now.Ticks - start)));
 				f++;
-			} while (AutoRepeat && !breakAnimation);
+			} while (CurrentFrame < Frames.Count & AutoRepeat && !breakAnimation);
+			Thread.Sleep (TimeSpan.FromTicks (TimeWaitAfter));
 		}
 
 		public void Pause()
 		{
+			throw new NotImplementedException ();
+			/*
 			breakAnimation = true;
 			//PlayThread.Join (TimeSpan.FromSeconds (Frames [CurrentFrame].FrameTime));
 			PlayThread.Abort ();
 			PlayThread = null;
+			*/
 		}
  
 		#region IDisposable implementation

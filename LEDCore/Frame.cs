@@ -24,10 +24,10 @@ namespace LEDCore
 
 		public Frame(bool[,,] frameData) {		
 			this.FrameData = frameData;
-			this.FrameTime = 1.0f;
+			this.FrameTime = 10000;
 		}
 
-		public Frame(bool[,,] frameData, float timeVisible) : this(frameData){
+		public Frame(bool[,,] frameData, long timeVisible) : this(frameData){
 			this.FrameTime = timeVisible;
 		}
 
@@ -37,6 +37,9 @@ namespace LEDCore
 		}
 		/// <summary>
 		/// Time for a single frame in ticks
+		/// 
+		/// Ticks per second              10,000,000
+		///	Ticks per millisecond             10,000
 		/// </summary>
 		/// <value>The frame time.</value>
 		public long FrameTime { 
@@ -44,16 +47,12 @@ namespace LEDCore
 			set; 		
 		}
 
-		public void SendData(ref System.IO.Stream stream)
+		public void SendData(System.IO.Stream stream)
 		{
 			int n = AssociatedAnimation.CubeSize;
-			bool[] bitBuffer = new bool[(int)Math.Pow(n,3)];
-
 			stream.WriteByte (LEDCore.ESC);
 			stream.WriteByte (LEDCore.SYNC);
-
-			int m = 0;
-			byte build = 0;
+		
 			for(int layer = 0; layer < n; layer++)
 			{
 				for(int x = 0; x < n; x++) 
