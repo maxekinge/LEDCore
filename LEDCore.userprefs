@@ -1,0 +1,14 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="LEDCore/Frame.cs">
+    <Files>
+      <File FileName="LEDCore/LEDCore.cs" Line="15" Column="33" />
+      <File FileName="LEDCore/Animation.cs" Line="99" Column="1" />
+      <File FileName="LEDCore/Frame.cs" Line="71" Column="1" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
